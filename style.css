@@ -146,6 +146,24 @@ body {
     transform: translateY(-50%);
 }
 
+
+/* --- Responsive Adjustments for Mobile --- */
+@media (max-width: 480px) {
+    .card {
+        padding: 1.5rem;
+    }
+
+    #rating-buttons button {
+        padding: 0.5rem 0.8rem; /* Tighter padding */
+        margin: 0 0.2rem;      /* Tighter margin */
+    }
+
+    .big-btn {
+        padding: 0.8rem;
+        font-size: 1rem;
+    }
+}
+
 .human-legend::before { background-color: #007bff; }
 .llm-legend::before { background-color: #dc3545; }
 .other-legend::before { background-color: #6c757d; }
