@@ -155,40 +155,42 @@ document.addEventListener('DOMContentLoaded', () => {
         sentenceDisplay.style.display = 'block';
     }
 
+    function handleRating(event) {
+        if (!event.target.classList.contains('rate-btn')) return;
+
+        const rating = parseInt(event.target.dataset.value, 10);
+        const sentence = sentences[currentSentenceIndex];
+
+        // Send the save request but don't wait for it to finish.
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ type: 'rating', userId, sentence, rating }),
+        }).catch(error => {
+            // Log errors to the console for debugging, but don't interrupt the user.
+            console.error('Failed to save rating:', error);
+        });
+
+        // Immediately move to the next sentence for a snappy feel.
+        currentSentenceIndex++;
+        displayCurrentSentence();
+    }
+
+    // The results display message is updated to reflect one-by-one saves.
     function displayCurrentSentence() {
         if (currentSentenceIndex < sentences.length) {
             document.getElementById('sentence-text').textContent = sentences[currentSentenceIndex];
             document.getElementById('progress-indicator').textContent = `Sentence ${currentSentenceIndex + 1} of ${sentences.length}`;
         } else {
+            // When done, just show the final message.
+            const resultsDisplayInner = document.getElementById('results-display-inner');
+            const resultsMessage = resultsDisplayInner.querySelector('p');
+            resultsMessage.textContent = 'Thank you! Your ratings have been saved.';
             sentenceDisplay.style.display = 'none';
             resultsDisplay.style.display = 'block';
         }
     }
 
-    async function handleRating(event) {
-        if (!event.target.classList.contains('rate-btn')) return;
-
-        const rating = parseInt(event.target.dataset.value, 10);
-        const sentence = sentences[currentSentenceIndex];
-        
-        document.querySelectorAll('.rate-btn').forEach(btn => btn.disabled = true);
-        document.getElementById('sentence-text').textContent = 'Saving rating...';
-
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ type: 'rating', userId, sentence, rating }),
-            });
-            currentSentenceIndex++;
-            displayCurrentSentence();
-        } catch (error) {
-            errorMessage.textContent = `Failed to submit rating: ${error.message}`;
-            showView(errorState);
-        } finally {
-            document.querySelectorAll('.rate-btn').forEach(btn => btn.disabled = false);
-        }
-    }
 
     // --- RESULTS VIEW LOGIC ---
     async function handleViewResults() {
