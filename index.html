@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorless green ideas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <h1>Sentence Project</h1>
+
+        <div id="home-view" class="card">
+            <h2>What do you want to do?</h2>
+            <div class="home-buttons">
+                <button id="go-to-submit-btn" class="big-btn">✍️ Submit a Sentence</button>
+                <button id="go-to-rate-btn" class="big-btn">⭐ Rate Sentences</button>
+                <button id="go-to-results-btn" class="big-btn">📊 View Results</button>
+            </div>
+        </div>
+
+        <div id="submission-view" class="card" style="display: none;">
+            <h2>Submit a New Sentence</h2>
+            <form id="submit-form">
+                <input type="text" id="sentence-input" placeholder="Enter your sentence. Capitalize and end with a period." required>
+                <button type="submit" width=30>Submit</button>
+            </form>
+            <p id="submit-message"></p>
+            <button class="back-btn">&larr; Back to Home</button>
+        </div>
+
+        <div id="rating-view" style="display: none;"></div>
+        
+        <div id="results-view" class="card" style="display: none;">
+            <h2>Average Ratings</h2>
+            <div id="results-legend">
+                <span class="legend-item human-legend">Human</span>
+                <span class="legend-item llm-legend">LLM</span>
+                <span class="legend-item other-legend">Other</span>
+            </div>
+            <div id="results-loading">🔄 Calculating results...</div>
+            <ul id="results-list"></ul>
+            <button class="back-btn">&larr; Back to Home</button>
+        </div>
+
+        <div id="error-state" class="card" style="display: none;">
+            <h2>⚠️ An Error Occurred</h2>
+            <p id="error-message"></p>
+            <button class="back-btn">&larr; Back to Home</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
