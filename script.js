@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let sentences = [];
     let currentSentenceIndex = 0;
     let userId = '';
+    let tempMeaningfulnessRating = null;
+    let tempSourceRating = null;
     
     // --- UTILITY FUNCTIONS ---
     /**
@@ -105,10 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="loading-state-inner" class="card"><p>🔄 Loading sentences...</p></div>
             <div id="sentence-display-inner" class="card" style="display: none;">
                 <p id="sentence-text">...</p>
-                <div id="rating-buttons">
-                    <button class="rate-btn" data-value="1">1</button> <button class="rate-btn" data-value="2">2</button> <button class="rate-btn" data-value="3">3</button> <button class="rate-btn" data-value="4">4</button> <button class="rate-btn" data-value="5">5</button>
+                <div id="meaningfulness-rating" class="rating-group">
+                    <p class="rating-label">How meaningful is this sentence?</p>
+                    <button class="rate-btn" data-value="1">1</button> 
+                    <button class="rate-btn" data-value="2">2</button> 
+                    <button class="rate-btn" data-value="3">3</button> 
+                    <button class="rate-btn" data-value="4">4</button> 
+                    <button class="rate-btn" data-value="5">5</button>
                 </div>
-                <p class="rating-label">(1 = Not Meaningful, 5 = Very Meaningful)</p>
+                <div id="source-rating" class="rating-group">
+                    <p class="rating-label">Is it from a human or an LLM?</p>
+                    <button class="btn-source" data-value="0">Human</button> 
+                    <button class="btn-source" data-value="1">LLM</button>
+                </div>
                 <p id="progress-indicator"></p>
             </div>
             <div id="results-display-inner" class="card" style="display: none;">
@@ -147,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function startRating() {
         currentSentenceIndex = 0;
-        document.getElementById('rating-buttons').addEventListener('click', handleRating);
+        document.getElementById('meaningfulness-rating').addEventListener('click', handleMeaningfulnessRating);
+        document.getElementById('source-rating').addEventListener('click', handleSourceRating);
         document.getElementById('restart-btn').addEventListener('click', startRating);
         displayCurrentSentence();
         loadingState.style.display = 'none';
@@ -155,29 +167,63 @@ document.addEventListener('DOMContentLoaded', () => {
         sentenceDisplay.style.display = 'block';
     }
 
-    function handleRating(event) {
-        if (!event.target.classList.contains('rate-btn')) return;
-
-        const rating = parseInt(event.target.dataset.value, 10);
-        const sentence = sentences[currentSentenceIndex];
-
-        // Send the save request but don't wait for it to finish.
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ type: 'rating', userId, sentence, rating }),
-        }).catch(error => {
-            // Log errors to the console for debugging, but don't interrupt the user.
-            console.error('Failed to save rating:', error);
-        });
-
-        // Immediately move to the next sentence for a snappy feel.
-        currentSentenceIndex++;
-        displayCurrentSentence();
+    function handleMeaningfulnessRating(event) {
+        const target = event.target;
+        if (!target.classList.contains('rate-btn')) return;
+        
+        tempMeaningfulnessRating = parseInt(target.dataset.value, 10);
+        
+        // Visual feedback
+        document.querySelectorAll('#meaningfulness-rating .rate-btn').forEach(btn => btn.classList.remove('selected'));
+        target.classList.add('selected');
+        
+        checkAndSubmitRatings();
     }
 
-    // The results display message is updated to reflect one-by-one saves.
+    function handleSourceRating(event) {
+        const target = event.target;
+        if (!target.classList.contains('btn-source')) return;
+
+        tempSourceRating = parseInt(target.dataset.value, 10);
+
+        // Visual feedback
+        document.querySelectorAll('#source-rating .btn-source').forEach(btn => btn.classList.remove('selected'));
+        target.classList.add('selected');
+
+        checkAndSubmitRatings();
+    }
+
+    function checkAndSubmitRatings() {
+        if (tempMeaningfulnessRating !== null && tempSourceRating !== null) {
+            const sentence = sentences[currentSentenceIndex];
+            
+            // Send the save request but don't wait for it to finish.
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ 
+                    type: 'rating', 
+                    userId, 
+                    sentence, 
+                    meaningfulness_rating: tempMeaningfulnessRating,
+                    source_rating: tempSourceRating 
+                }),
+            }).catch(error => {
+                console.error('Failed to save rating:', error);
+            });
+
+            // Reset for the next sentence
+            tempMeaningfulnessRating = null;
+            tempSourceRating = null;
+            currentSentenceIndex++;
+            setTimeout(displayCurrentSentence, 200); // Small delay for user to see selection
+        }
+    }
+
     function displayCurrentSentence() {
+        // Reset button visuals
+        document.querySelectorAll('.rate-btn, .btn-source').forEach(btn => btn.classList.remove('selected'));
+
         if (currentSentenceIndex < sentences.length) {
             document.getElementById('sentence-text').textContent = sentences[currentSentenceIndex];
             document.getElementById('progress-indicator').textContent = `Sentence ${currentSentenceIndex + 1} of ${sentences.length}`;
@@ -215,9 +261,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.classList.add(typeClass);
 
                     li.innerHTML = `
-                        <div style="text-align: left; flex-grow: 1;">${item.sentence}</div>
-                        <div>
-                            <span>${item.average.toFixed(2)} ★</span> 
+                        <div class="sentence-text">${item.sentence}</div>
+                        <div class="stats-container">
+                            <div class="stat">
+                                <span class="stat-label">Meaning:</span>
+                                ${item.meaningfulness_average.toFixed(2)} ★
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">LLM Score:</span>
+                                ${item.source_average.toFixed(2)}
+                            </div>
                             <em>(${item.count} ratings)</em>
                         </div>
                     `;

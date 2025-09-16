@@ -33,7 +33,7 @@ body {
 }
 
 #sentence-input {
-    width: 80%;
+    width: 100%;
     padding: 12px;
     margin-bottom: 1rem;
     font-size: 1rem;
@@ -41,76 +41,70 @@ body {
     border-radius: 4px;
     box-sizing: border-box; /* Ensures padding doesn't add to the width */
 }
-
-#rating-buttons button {
-    font-size: 1.2rem;
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: #f7f7f7;
-    transition: background-color 0.2s, transform 0.2s;
+/* --- New styles for second rating task --- */
+#source-rating-buttons {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
 }
 
-#rating-buttons button:hover {
-    background-color: #e0e0e0;
-    transform: translateY(-2px);
-}
-
-.rating-label {
-    font-size: 0.9rem;
-    color: #777;
-    margin-top: 1rem;
-}
-
-#progress-indicator {
-    margin-top: 1.5rem;
-    color: #555;
-    font-style: italic;
-}
-
-#restart-btn {
-    margin-top: 1rem;
-    padding: 0.7rem 1.5rem;
+#source-rating-buttons .btn-source {
+    padding: 0.5rem 1.5rem;
     font-size: 1rem;
+    margin: 0 0.5rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+/* Style for when a rating button is selected */
+.rating-group button.selected {
     background-color: #007bff;
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    border-color: #007bff;
 }
 
-#error-state h2 {
-    color: #d93025;
-}
-
-/* --- Results View Styling --- */
+/* --- Updated Results View Styling --- */
 #results-list li {
     background-color: #f9f9f9;
     padding: 0.8rem 1.2rem;
     border-radius: 6px;
     margin-bottom: 0.5rem;
     display: flex;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
     justify-content: space-between;
     align-items: center;
     font-size: 1.1rem;
-    border-left: 5px solid #ccc; /* Default border */
+    border-left: 5px solid #ccc;
 }
 
-#results-list li span {
+#results-list .sentence-text {
+    flex-basis: 100%; /* Full width on its own line */
+    margin-bottom: 0.75rem;
+    text-align: left;
+}
+
+#results-list .stats-container {
+    flex-basis: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#results-list .stat {
     font-weight: bold;
     color: #333;
     background-color: #e9ecef;
     padding: 0.2rem 0.6rem;
     border-radius: 4px;
-    margin-right: 1rem;
+    font-size: 0.9rem;
 }
 
-#results-list li em {
-    font-size: 0.9rem;
-    color: #888;
-    margin-left: 1rem;
+#results-list .stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-right: 0.4rem;
 }
 
 /* Color-coding for sentences */
