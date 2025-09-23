@@ -1,0 +1,5 @@
+"0","dat %>% glmer(is_right~SentenceType+offset(.5)+(1|User_Response)+(1|Sentence),data=.,family=binomial) %>% summary
+"
+"2","Error in h(simpleError(msg, call)) : 
+  error in evaluating the argument 'object' in selecting a method for function 'summary': variable lengths differ (found for 'offset(0.5)')
+"

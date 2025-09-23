@@ -1,0 +1,2 @@
+"0","stims <- read.csv(""Colorless green ideas - Sentences.csv"")"
+"0","responses <- read.csv(""Colorless green ideas - Ratings.csv"")"

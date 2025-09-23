@@ -1,0 +1,15 @@
+"0","dat <- dat %>% mutate(is_right = as.numeric((SourceRating==1 & UserType==""LLM"") | (SourceRating==0 & UserType==""human""))) %>% 
+  filter(User_Response != User_Sentence) #let's remove responses to self-produced sentences
+"
+"1","[1m[33mError[39m in `mutate()`:[22m
+[38;5;232m[36mℹ[38;5;232m In argument: `is_right = as.numeric(...)`.[39m
+[1mCaused by error:[22m
+[33m![39m object 'UserType' not found
+Backtrace:
+[90m 1. [39m... %>% filter(User_Response != User_Sentence)
+[90m 4. [39m[1m[94mdplyr:::mutate.data.frame([39m[22m...[1m[94m)[39m[22m
+[90m 5. [39mdplyr:::mutate_cols(.data, dplyr_quosures(...), by)
+[90m 7. [39mdplyr:::mutate_col(dots[[i]], data, mask, new_columns)
+[90m 8. [39mmask$eval_all_mutate(quo)
+[90m 9. [39m[1mdplyr[22m (local) eval()
+"

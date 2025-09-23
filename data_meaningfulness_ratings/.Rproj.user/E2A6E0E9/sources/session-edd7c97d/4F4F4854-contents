@@ -1,0 +1,92 @@
+---
+title: "Basic Analyses of Colorless Green Ideas"
+author: "Gary Lupyan"
+date: "2025-09-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lme4)
+library(ggplot2)
+library(RColorBrewer)
+```
+
+
+```{r}
+stims <- read.csv("raw_data/Colorless green ideas - Sentences.csv")
+responses <- read.csv("raw_data/Colorless green ideas - Ratings.csv")
+```
+
+```{r}
+dat <- left_join(responses,stims,by=c("Sentence"="Sentence")) %>%
+  rename(User_Response = UserID.x,
+         User_Sentence = UserID.y,
+         Timestamp_Response = Timestamp.x,
+         Timestamp_Sentence = Timestamp.y,
+         SentenceType = UserType)
+  
+dat <- dat %>% mutate(is_right = as.numeric((SourceRating==1 & SentenceType=="LLM") | (SourceRating==0 & SentenceType=="human"))) %>% 
+  filter(User_Response != User_Sentence) #let's remove responses to self-produced sentences
+
+```
+
+```{r}
+dat %>% group_by(SentenceType) %>% summarize_if(is.numeric,mean)
+
+dat %>% lmer(MeaningfulnessRating~SentenceType+(1|User_Response)+(1|Sentence),data=.) %>% summary
+
+```
+
+```{r}
+dat_agg <- dat %>% group_by(SentenceType,User_Response) %>%
+  summarize(MeaningfulnessRating=mean(MeaningfulnessRating),
+                                      is_right=mean(is_right),
+                                      is_LLM = mean(as.numeric(SourceRating==1)),
+                                      num_ratings=n())
+
+```
+
+```{r}
+dat %>% ggplot(aes(x=SentenceType,y=MeaningfulnessRating,fill=SentenceType))+
+  geom_violin(position = position_dodge(width = 0.9),alpha=.5)+
+  geom_point(data=dat_agg,aes(x=SentenceType,y=MeaningfulnessRating,color=SentenceType,group=User_Response),alpha=.9)+
+  stat_summary(aes(x=SentenceType,y=MeaningfulnessRating),
+    fun = "mean",
+    geom = "point",
+    color = "black",
+    size = 4,
+    shape = 17)+
+  geom_line(data=dat_agg,aes(x=SentenceType,y=MeaningfulnessRating,group=User_Response))+
+  ylab("Meaningfulness Rating\n ---> More meaningful")+xlab("Sentence Type")+
+  theme_minimal(base_size = 16)+
+  theme(legend.position = "none")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")
+
+```
+
+
+```{r}
+avoid_infinities <- function(x) {
+  ifelse(x == 1, x - 0.01,
+         ifelse(x == 0, x + 0.01, x))
+}
+
+dat_agg_d_prime <- dat_agg %>% 
+  pivot_wider(id_cols=User_Response,names_from=SentenceType,values_from=is_LLM) %>% 
+  mutate(z_hits = qnorm(avoid_infinities(LLM)),
+         z_fa = qnorm(avoid_infinities(human)),
+         d_prime = z_hits-z_fa)
+  
+dat_agg_d_prime %>% ggplot(aes(y=d_prime,x=""))+
+  geom_violin(fill="gray")+
+  stat_summary(fun = mean, geom = "point",size=4)+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.1)+xlab("")+ylab("Is the sentence produced by an LLM? (d')")+
+  theme_minimal(base_size = 15)
+
+  
+
+```
+
